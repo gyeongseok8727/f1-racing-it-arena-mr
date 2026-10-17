@@ -1,0 +1,13 @@
+[project]
+name = "mr-racing"
+version = "0.1.0"
+requires-python = ">=3.10"  # Jetson: Ubuntu 22.04 / Python 3.10
+dependencies = ["numpy", "opencv-python-headless", "pyyaml", "matplotlib"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["slow: runs the 2D sim (several seconds)"]

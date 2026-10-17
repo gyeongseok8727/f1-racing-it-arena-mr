@@ -87,7 +87,9 @@ class FollowTheGap:
     v_max: float = 1.5
     v_min: float = 0.4
     a_lat: float = 0.4 * G
-    stop_distance: float = 0.25
+    stop_distance: float = 0.10
+    lookahead_min: float = 0.25
+    lookahead_max: float = 0.8
     k_center: float = 0.6  # pulls toward the corridor middle when walls are close
 
     def command(self, angles: np.ndarray, ranges: np.ndarray) -> tuple[float, float]:
@@ -110,15 +112,18 @@ class FollowTheGap:
         right = self._min_in(a, r, -math.radians(110), -math.radians(60))
         heading += self.k_center * float(np.clip(left - right, -0.3, 0.3))
 
-        lookahead = max(min(best, 1.5), 0.3)
+        # Pure-Pursuit style arc toward the gap direction. Use a short fixed-ish lookahead,
+        # not the gap depth: a 70 deg gap 1.5 m away would otherwise give ~10 deg of steer.
+        front = self._min_in(a, r, -math.radians(12), math.radians(12))
+        lookahead = float(np.clip(min(front, best), self.lookahead_min, self.lookahead_max))
         delta = math.atan2(2.0 * self.params.wheelbase * math.sin(heading), lookahead)
         delta = float(np.clip(delta, -self.params.max_steer, self.params.max_steer))
 
-        front = self._min_in(a, r, -math.radians(12), math.radians(12))
-        v = min(self.v_max, steer_speed_cap(delta, self.params, self.a_lat))
-        v = min(v, max(0.0, (front - self.stop_distance)) * 1.5)
-        if front < self.stop_distance:
+        if front < self.stop_distance:  # wall right at the bumper: emergency stop only
             return delta, 0.0
+        v = min(self.v_max, steer_speed_cap(delta, self.params, self.a_lat))
+        v = min(v, self.v_min + (front - self.stop_distance) * 1.2)
+        # keep crawling while turning: stopping in a tight corner leaves the car stuck
         return delta, max(v, self.v_min)
 
     def _extend_disparities(self, a: np.ndarray, r: np.ndarray) -> np.ndarray:

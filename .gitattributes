@@ -1,0 +1,6 @@
+# Jetson (Linux) and Windows share this repo: keep LF in the repo
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.stl binary
