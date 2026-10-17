@@ -22,3 +22,6 @@ rosbag*/
 .idea/
 .DS_Store
 Thumbs.db
+
+# sim outputs
+out/
