@@ -160,13 +160,21 @@ class OccupancyMap:
         v = self.value_at(x, y)
         return (v == PX_WALL) | (v == PX_OUTSIDE)
 
-    def raycast(self, x: float, y: float, angles: np.ndarray, max_range: float) -> np.ndarray:
-        """Range to first occupied cell along each world-frame angle (simple ray marching)."""
+    def raycast(self, x: float, y: float, angles: np.ndarray, max_range: float,
+                occupied: np.ndarray | None = None) -> np.ndarray:
+        """Range to first occupied cell along each world-frame angle (simple ray marching).
+        `occupied` overrides the static mask (e.g. with other cars drawn in)."""
         step = self.resolution * 0.75
         r = np.arange(step, max_range + step, step)
         px = x + np.outer(np.cos(angles), r)
         py = y + np.outer(np.sin(angles), r)
-        hit = self.is_occupied(px, py)
+        if occupied is None:
+            hit = self.is_occupied(px, py)
+        else:
+            row, col = self.world_to_px(px, py)
+            inside = (row >= 0) & (row < self.height) & (col >= 0) & (col < self.width)
+            hit = np.ones(row.shape, dtype=bool)
+            hit[inside] = occupied[row[inside], col[inside]]
         first = np.where(hit.any(axis=1), hit.argmax(axis=1), len(r) - 1)
         return r[first]
 

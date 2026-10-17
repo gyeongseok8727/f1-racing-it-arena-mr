@@ -1,0 +1,50 @@
+# Race-day parameters. Values marked TODO(HW) come from measurements on the real car.
+esp32_bridge:
+  ros__parameters:
+    port: /dev/ttyUSB0        # TODO(HW) ESP32 USB-serial (or /dev/ttyTHS1 for Jetson UART pins)
+    baud: 921600
+    ediff_gain: 0.6           # start 0.5-0.7, raise after tests (PLAN_REVIEW)
+    max_speed: 3.0
+
+race_node:
+  ros__parameters:
+    grid_slot: 0              # set from the free-lap result (0..5, scene.json order)
+    laps: 5
+    a_lat_g: 0.45             # TODO(HW) measured grip; lap time depends mostly on this
+    v_max: 2.0                # raise step by step
+    lane_change: false        # overtaking via grass lane: off until proven on the testbed
+    lidar_x: 0.10             # TODO(HW) lidar centre forward of the rear axle [m]
+    lidar_yaw: 0.0            # TODO(HW) rad, lidar 0-angle vs car forward (RPLIDAR C1 cable side)
+    lidar_flip: false
+    wheelbase: 0.145
+    max_steer_deg: 30.0       # TODO(HW) measured; must be >= 26
+    deskew: true
+    control_hz: 50.0
+
+vision_node:
+  ros__parameters:
+    device: 0
+    width: 848
+    height: 480
+    fps: 30
+    hfov_deg: 69.4            # TODO(HW) or fill camera_matrix from calibration
+    camera_matrix: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    dist_coeffs: [0.0, 0.0, 0.0, 0.0, 0.0]
+    cam_x: 0.12               # TODO(HW) camera position from rear axle [m]
+    cam_y: 0.0
+    cam_z: 0.15
+    cam_pitch_deg: 10.0
+    start_roi: [0, 0, 848, 240]   # TODO race day: box around the light from the grid
+    light_v_min: 170
+    light_s_min: 90
+    light_min_area: 12
+    save_frame: ""            # e.g. /tmp/grid_view.jpg to pick start_roi
+
+rplidar_node:
+  ros__parameters:
+    channel_type: serial
+    serial_port: /dev/ttyUSB1 # TODO(HW)
+    serial_baudrate: 460800   # RPLIDAR C1
+    frame_id: laser
+    angle_compensate: true
+    scan_mode: Standard

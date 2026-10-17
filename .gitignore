@@ -25,3 +25,8 @@ Thumbs.db
 
 # sim outputs
 out/
+
+# ESP-NOW keys / MACs
+firmware/common/secrets.h
+.pio/
+*.egg-info/
